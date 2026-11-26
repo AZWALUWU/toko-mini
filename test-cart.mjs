@@ -33,4 +33,27 @@ const mockCart = [
 const totalPrice = mockCart.reduce((acc, curr) => acc + curr.price * curr.quantity, 0);
 assert.strictEqual(totalPrice, 183000, "Perhitungan total harga keranjang harus tepat");
 
+// 4. Admin CRUD Product array operations check
+let products = [
+  { id: "p-01", name: "Beras 5kg", price: 74000, stock: 10 },
+  { id: "p-02", name: "Minyak 2L", price: 35000, stock: 5 },
+];
+
+// Create
+const newProd = { id: "p-03", name: "Gula 1kg", price: 17500, stock: 20 };
+products = [newProd, ...products];
+assert.strictEqual(products.length, 3, "Produk baru harus bertambah ke array");
+assert.strictEqual(products[0].id, "p-03");
+
+// Update
+products = products.map((p) => (p.id === "p-02" ? { ...p, stock: 15, price: 36000 } : p));
+const updated = products.find((p) => p.id === "p-02");
+assert.strictEqual(updated.stock, 15, "Stok produk terupdate harus bernilai 15");
+assert.strictEqual(updated.price, 36000, "Harga produk terupdate harus bernilai 36000");
+
+// Delete
+products = products.filter((p) => p.id !== "p-01");
+assert.strictEqual(products.length, 2, "Jumlah produk harus berkurang setelah delete");
+assert.strictEqual(products.some((p) => p.id === "p-01"), false, "Produk p-01 harus terhapus");
+
 console.log("Self-check logic passed successfully.");

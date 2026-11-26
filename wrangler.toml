@@ -1,0 +1,9 @@
+name = "toko-mini"
+compatibility_date = "2024-11-01"
+pages_build_output_dir = "dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "toko-mini-db"
+database_id = "toko-mini-d1"
+migrations_dir = "migrations"

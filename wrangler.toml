@@ -5,5 +5,5 @@ pages_build_output_dir = "dist"
 [[d1_databases]]
 binding = "DB"
 database_name = "toko-mini-db"
-database_id = "toko-mini-d1"
+database_id = "72b2fa25-8abe-4b46-ac63-2eaff8bee82f"
 migrations_dir = "migrations"

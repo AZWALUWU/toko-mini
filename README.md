@@ -1,32 +1,62 @@
-# React + TypeScript + Vite
+# Toko Online Mini (Direct WhatsApp Checkout)
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Aplikasi toko online mini berbasis web untuk melatih manajemen state keranjang belanja, alur checkout langsung ke WhatsApp penjual, dan filter produk dengan desain bersih berstandar aksesibilitas tinggi.
 
-Currently, two official plugins are available:
+## Fitur Utama
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Katalog & Filter Produk**: Pencarian nama/deskripsi produk secara langsung dan filter berbasis kategori.
+- **Manajemen Keranjang Belanja (`useCart`)**:
+  - Tambah barang, ubah kuantitas, hapus barang, dan kosongkan keranjang.
+  - Data tersinkronisasi otomatis dengan `localStorage`.
+- **Checkout WhatsApp Langsung**:
+  - Form pengisian data penerima (nama, nomor WA, alamat lengkap).
+  - Validasi formulir dengan feedback pesan yang jelas.
+  - Generate pesan order terformat dan membuka chat WhatsApp penjual via tautan `https://wa.me/...`.
+- **Desain & Aksesibilitas**:
+  - Target sentuh tombol mobile minimal 44x44px.
+  - Dukungan navigasi keyboard penuh (Tab, Enter, Escape untuk menutup modal/drawer).
+  - Rasio kontras warna teks memenuhi standar WCAG AA.
+  - Bebas karakter em dash dan copy alami tanpa buzzword.
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Framework**: React 19 + TypeScript + Vite
+- **Styling**: Tailwind CSS + Komponen UI Primitives
+- **Icons**: Lucide React
+- **Hosting**: Cloudflare Pages (Free Tier)
 
-## Expanding the Oxlint configuration
+## Menjalankan di Lokal
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `tsrs` and editing `.oxlintrc.json`:
+1. Clone repository:
+   ```bash
+   git clone https://github.com/AZWALUWU/toko-mini.git
+   cd toko-mini
+   ```
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
+2. Pasang dependensi:
+   ```bash
+   npm install
+   ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+3. Jalankan development server:
+   ```bash
+   npm run dev
+   ```
+
+4. Jalankan build produksi:
+   ```bash
+   npm run build
+   ```
+
+## Deployment ke Cloudflare Pages (Free Tier)
+
+Proyek ini telah dikonfigurasi dengan file `public/_redirects` untuk mendukung Single Page Application (SPA).
+
+1. Buka [Cloudflare Dashboard](https://dash.cloudflare.com).
+2. Pilih **Workers & Pages** > **Create application** > **Pages** > **Connect to Git**.
+3. Hubungkan repository `AZWALUWU/toko-mini`.
+4. Konfigurasi build:
+   - **Framework preset**: `Vite`
+   - **Build command**: `npm run build`
+   - **Build output directory**: `dist`
+5. Klik **Save and Deploy**.

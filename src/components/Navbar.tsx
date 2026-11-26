@@ -1,25 +1,29 @@
 import React from "react";
-import { ShoppingBag, Store, ShieldCheck, ShoppingCart } from "lucide-react";
+import { ShoppingBag, Store, ArrowLeft } from "lucide-react";
 import { STORE_NAME } from "../data/products";
 
 interface NavbarProps {
   totalItems: number;
   onOpenCart: () => void;
-  isAdminMode: boolean;
-  onToggleAdmin: () => void;
+  isAdminRoute: boolean;
+  onNavigateHome: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   totalItems,
   onOpenCart,
-  isAdminMode,
-  onToggleAdmin,
+  isAdminRoute,
+  onNavigateHome,
 }) => {
   return (
     <header className="sticky top-0 z-30 bg-white border-b border-zinc-200">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
         {/* Brand identity */}
-        <div className="flex items-center gap-2.5">
+        <button
+          type="button"
+          onClick={onNavigateHome}
+          className="flex items-center gap-2.5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 rounded-lg p-1 -ml-1"
+        >
           <div className="w-10 h-10 rounded-lg bg-emerald-700 text-white flex items-center justify-center shrink-0">
             <Store className="w-5 h-5" aria-hidden="true" />
           </div>
@@ -28,39 +32,23 @@ export const Navbar: React.FC<NavbarProps> = ({
               {STORE_NAME}
             </span>
             <span className="text-xs text-zinc-500 block">
-              {isAdminMode ? "Mode Pengelola Toko" : "Pesan langsung ke WhatsApp"}
+              {isAdminRoute ? "Panel Khusus Pengelola" : "Pesan langsung ke WhatsApp"}
             </span>
           </div>
-        </div>
+        </button>
 
         {/* Right side actions */}
         <div className="flex items-center gap-2">
-          {/* Admin Mode Toggle */}
-          <button
-            type="button"
-            onClick={onToggleAdmin}
-            className={`min-h-[44px] min-w-[44px] px-3 py-2 rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700 ${
-              isAdminMode
-                ? "bg-zinc-800 text-white hover:bg-zinc-900"
-                : "border border-zinc-300 text-zinc-700 hover:bg-zinc-100"
-            }`}
-            aria-label={isAdminMode ? "Beralih ke tampilan pembeli" : "Masuk ke mode admin pengelola"}
-          >
-            {isAdminMode ? (
-              <>
-                <ShoppingCart className="w-4 h-4" aria-hidden="true" />
-                <span className="hidden sm:inline">Ke Etalase</span>
-              </>
-            ) : (
-              <>
-                <ShieldCheck className="w-4 h-4 text-emerald-800" aria-hidden="true" />
-                <span className="hidden sm:inline">Kelola Toko</span>
-              </>
-            )}
-          </button>
-
-          {/* Cart button (only in store mode) */}
-          {!isAdminMode && (
+          {isAdminRoute ? (
+            <button
+              type="button"
+              onClick={onNavigateHome}
+              className="min-h-[44px] px-3.5 py-2 rounded-lg border border-zinc-300 text-zinc-700 hover:bg-zinc-100 text-xs font-semibold inline-flex items-center gap-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-700"
+            >
+              <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+              <span>Halaman Utama</span>
+            </button>
+          ) : (
             <button
               type="button"
               onClick={onOpenCart}

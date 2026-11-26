@@ -25,16 +25,16 @@ export function useCart() {
     }
   }, [items]);
 
-  const addItem = (product: Product) => {
+  const addItem = (product: Product, quantity = 1) => {
     setItems((prev) => {
       const existing = prev.find((i) => i.product.id === product.id);
       if (existing) {
-        const nextQty = Math.min(existing.quantity + 1, product.stock);
+        const nextQty = Math.min(existing.quantity + quantity, product.stock);
         return prev.map((i) =>
           i.product.id === product.id ? { ...i, quantity: nextQty } : i
         );
       }
-      return [...prev, { product, quantity: 1 }];
+      return [...prev, { product, quantity: Math.min(quantity, product.stock) }];
     });
   };
 

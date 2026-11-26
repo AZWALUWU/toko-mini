@@ -1,27 +1,48 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import type { ProductCategory, Product } from "./types";
 import { useCart } from "./hooks/useCart";
 import { useProducts } from "./hooks/useProducts";
 import { Navbar } from "./components/Navbar";
 import { ProductFilter } from "./components/ProductFilter";
 import { ProductCard } from "./components/ProductCard";
+import { ProductDetailModal } from "./components/ProductDetailModal";
 import { CartDrawer } from "./components/CartDrawer";
 import { CheckoutModal } from "./components/CheckoutModal";
 import { AdminDashboard } from "./components/admin/AdminDashboard";
-import { AdminPinModal } from "./components/admin/AdminPinModal";
+import { AdminAuth } from "./components/admin/AdminAuth";
 import { Footer } from "./components/Footer";
 import { Button } from "./components/ui/button";
 import { ShoppingBag, SearchX } from "lucide-react";
 
 export function App() {
-  const [isAdminMode, setIsAdminMode] = useState(false);
-  const [adminPin, setAdminPin] = useState("123456");
-  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+  // Routing: deteksi path /admin
+  const [currentPath, setCurrentPath] = useState(() => window.location.pathname);
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
+  const [adminPassword, setAdminPassword] = useState("");
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory>("Semua");
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+
+  // Modal Detail Produk
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  // Sinkronisasi rute URL saat popstate (tombol back/forward browser)
+  useEffect(() => {
+    const handleLocationChange = () => {
+      setCurrentPath(window.location.pathname);
+    };
+    window.addEventListener("popstate", handleLocationChange);
+    return () => window.removeEventListener("popstate", handleLocationChange);
+  }, []);
+
+  const navigateTo = (path: string) => {
+    window.history.pushState({}, "", path);
+    setCurrentPath(path);
+  };
+
+  const isAdminRoute = currentPath.toLowerCase().startsWith("/admin");
 
   // Dynamic products from Cloudflare D1 / LocalStorage
   const {
@@ -64,8 +85,13 @@ export function App() {
     setSelectedCategory("Semua");
   };
 
-  const handleAddToCart = (product: Product) => {
-    addItem(product);
+  const handleAddToCart = (product: Product, quantity = 1) => {
+    addItem(product, quantity);
+  };
+
+  const handleBuyNow = (product: Product, quantity = 1) => {
+    addItem(product, quantity);
+    setIsCheckoutOpen(true);
   };
 
   const handleProceedToCheckout = () => {
@@ -77,29 +103,27 @@ export function App() {
     clearCart();
   };
 
-  const handleToggleAdmin = () => {
-    if (isAdminMode) {
-      setIsAdminMode(false);
-    } else {
-      setIsPinModalOpen(true);
-    }
+  const handleAdminAuthSuccess = (password: string) => {
+    setAdminPassword(password);
+    setIsAdminAuthenticated(true);
   };
 
-  const handlePinSuccess = (enteredPin: string) => {
-    setAdminPin(enteredPin);
-    setIsAdminMode(true);
+  const handleExitAdmin = () => {
+    setIsAdminAuthenticated(false);
+    setAdminPassword("");
+    navigateTo("/");
   };
 
   const handleAddProduct = (data: Omit<Product, "id">) => {
-    addProduct(data, adminPin);
+    addProduct(data, adminPassword);
   };
 
   const handleUpdateProduct = (product: Product) => {
-    updateProduct(product, adminPin);
+    updateProduct(product, adminPassword);
   };
 
   const handleDeleteProduct = (productId: string) => {
-    deleteProduct(productId, adminPin);
+    deleteProduct(productId, adminPassword);
   };
 
   return (
@@ -108,23 +132,31 @@ export function App() {
       <Navbar
         totalItems={totalItems}
         onOpenCart={() => setIsCartOpen(true)}
-        isAdminMode={isAdminMode}
-        onToggleAdmin={handleToggleAdmin}
+        isAdminRoute={isAdminRoute}
+        onNavigateHome={() => navigateTo("/")}
       />
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8">
-        {isAdminMode ? (
-          /* Admin View (CRUD Produk) */
-          <AdminDashboard
-            products={products}
-            syncStatus={syncStatus}
-            onAddProduct={handleAddProduct}
-            onUpdateProduct={handleUpdateProduct}
-            onDeleteProduct={handleDeleteProduct}
-            onResetDefaults={resetToDefaults}
-            onExitAdmin={() => setIsAdminMode(false)}
-          />
+        {isAdminRoute ? (
+          isAdminAuthenticated ? (
+            /* Admin View (CRUD Produk) */
+            <AdminDashboard
+              products={products}
+              syncStatus={syncStatus}
+              onAddProduct={handleAddProduct}
+              onUpdateProduct={handleUpdateProduct}
+              onDeleteProduct={handleDeleteProduct}
+              onResetDefaults={resetToDefaults}
+              onExitAdmin={handleExitAdmin}
+            />
+          ) : (
+            /* Admin Password Prompt */
+            <AdminAuth
+              onSuccess={handleAdminAuthSuccess}
+              onBackToStore={() => navigateTo("/")}
+            />
+          )
         ) : (
           /* Buyer View (Etalase Belanja) */
           <>
@@ -135,7 +167,7 @@ export function App() {
                   Katalog Sembako & Kebutuhan Rumah Tangga
                 </h1>
                 <p className="text-emerald-100 text-sm sm:text-base leading-relaxed">
-                  Pilih kebutuhan harian keluarga Anda, masukkan ke keranjang belanja, dan kirimkan pesanan langsung ke WhatsApp admin kami untuk konfirmasi pengiriman.
+                  Pilih kebutuhan harian keluarga Anda, klik kartu produk untuk melihat detail lengkap, atau masukkan langsung ke keranjang untuk pesan via WhatsApp.
                 </p>
               </div>
             </section>
@@ -159,12 +191,13 @@ export function App() {
                     <ProductCard
                       key={product.id}
                       product={product}
-                      onAddToCart={handleAddToCart}
+                      onAddToCart={(p) => handleAddToCart(p, 1)}
+                      onViewDetail={setSelectedProduct}
                     />
                   ))}
                 </div>
               ) : (
-                /* Empty State Filter (R-27) */
+                /* Empty State Filter */
                 <div className="bg-white border border-zinc-200 rounded-xl p-8 sm:p-12 text-center max-w-md mx-auto my-8">
                   <div className="w-14 h-14 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-400 mx-auto mb-4">
                     <SearchX className="w-7 h-7" aria-hidden="true" />
@@ -204,6 +237,15 @@ export function App() {
         )}
       </main>
 
+      {/* Product Detail Modal */}
+      <ProductDetailModal
+        product={selectedProduct}
+        isOpen={!!selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+        onAddToCart={handleAddToCart}
+        onBuyNow={handleBuyNow}
+      />
+
       {/* Cart Drawer */}
       <CartDrawer
         isOpen={isCartOpen}
@@ -224,13 +266,6 @@ export function App() {
         items={items}
         totalPrice={totalPrice}
         onCheckoutSuccess={handleCheckoutSuccess}
-      />
-
-      {/* Admin PIN Prompt Modal */}
-      <AdminPinModal
-        isOpen={isPinModalOpen}
-        onClose={() => setIsPinModalOpen(false)}
-        onSuccess={handlePinSuccess}
       />
 
       {/* Footer Landmark */}

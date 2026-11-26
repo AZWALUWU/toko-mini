@@ -3,7 +3,7 @@ interface Env {
   ADMIN_PIN?: string;
 }
 
-const DEFAULT_PIN = "123456";
+const DEFAULT_PIN = "rfEoDAz$hY@N7v&2llE2";
 
 export const onRequestPut = async (context: {
   request: Request;
